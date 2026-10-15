@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- Nodes (junctions) of a 3-lane motorway segment with one on-ramp.
+     x/y in metres. Traffic drives west -> east, the ramp joins from the right. -->
+<nodes>
+    <node id="n0" x="500"  y="0"/>     <!-- upstream end of the segment -->
+    <node id="n1" x="1500" y="0"/>     <!-- merge: ramp joins the motorway -->
+    <node id="n2" x="1800" y="0"/>     <!-- end of the 300 m acceleration lane -->
+    <node id="n3" x="2300" y="0"/>     <!-- downstream end of the segment -->
+
+    <node id="r0" x="700"  y="-150"/>  <!-- start of the on-ramp -->
+    <node id="r1" x="1250" y="-40" type="traffic_light"/>  <!-- ramp-metering signal -->
+</nodes>

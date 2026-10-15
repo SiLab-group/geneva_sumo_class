@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- Routes (-r) are generated and passed by run_demo.py -->
+<configuration>
+    <input>
+        <net-file value="net/geneva_merge.net.xml"/>
+        <additional-files value="detectors.add.xml"/>
+    </input>
+
+    <report>
+        <no-step-log value="true"/>
+    </report>
+
+    <gui_only>
+        <gui-settings-file value="gui.view.xml"/>
+    </gui_only>
+</configuration>

@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<viewsettings>
+    <!-- vehicleMode="8" = colour vehicles "by speed" (red = slow, green = fast) -->
+    <scheme name="demo">
+        <vehicles vehicleMode="8" vehicleQuality="2"/>
+    </scheme>
+    <delay value="20"/>
+</viewsettings>

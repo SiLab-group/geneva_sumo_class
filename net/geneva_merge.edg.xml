@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- Edges (road sections). speed in m/s: 33.33 = 120 km/h, 22.22 = 80 km/h -->
+<edges>
+    <edge id="main_up"    from="n0" to="n1" numLanes="3" speed="33.33" priority="10"/>
+    <edge id="accel"      from="n1" to="n2" numLanes="4" speed="33.33" priority="10"/>
+    <edge id="main_down"  from="n2" to="n3" numLanes="3" speed="33.33" priority="10"/>
+
+    <edge id="ramp_in"    from="r0" to="r1" numLanes="1" speed="22.22" priority="5"/>
+    <edge id="ramp_merge" from="r1" to="n1" numLanes="1" speed="22.22" priority="5"/>
+</edges>
