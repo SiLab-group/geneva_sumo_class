@@ -1,37 +1,74 @@
 #!/usr/bin/env python3
 """
-Interactive control panel for the Geneva on-ramp demo.
+Interactive control panel for a Geneva-style motorway on-ramp.
 
     python control_panel.py
 
-Opens sumo-gui together with a small window of sliders and buttons.
-Change the traffic while the simulation runs and watch what happens on the road.
+Opens sumo-gui together with a window of sliders and buttons that change
+the traffic while the simulation runs.
 """
 import random
+import subprocess
 import tkinter as tk
 from collections import deque
+from pathlib import Path
 
 import sumolib
 import traci
 
-import run_demo
+HERE = Path(__file__).resolve().parent
+NET_DIR = HERE / "net"
+NET_FILE = NET_DIR / "geneva_merge.net.xml"
+OUT_DIR = HERE / "out"
 
-STEP = run_demo.STEP
+STEP = 0.5                           # simulation step length [s]
 MOTORWAY = ["main_up", "accel", "main_down"]
+TLS_ID = "r1"                        # ramp signal (node r1)
 CLOSED_LANE = "main_down_2"          # left lane after the merge (roadworks)
 CHART_SECONDS = 600                  # speed history shown in the chart [s]
 GREEN_TIME = 2.0                     # ramp signal green per car [s]
 
 
+def build_network():
+    """Convert the plain XML description (nodes, edges, connections) into a SUMO network."""
+    subprocess.run([sumolib.checkBinary("netconvert"),
+                    "-n", str(NET_DIR / "geneva_merge.nod.xml"),
+                    "-e", str(NET_DIR / "geneva_merge.edg.xml"),
+                    "-x", str(NET_DIR / "geneva_merge.con.xml"),
+                    "-o", str(NET_FILE),
+                    "--no-turnarounds",
+                    "--offset.disable-normalization"],  # keeps the x/y of the .nod.xml file
+                   check=True)
+
+
 def write_routes():
-    """Vehicle types and the two routes; vehicles are added live by the panel."""
-    lines = ['<routes>'] + run_demo.VTYPES + [
+    """Vehicle types and the two routes; the panel adds the vehicles live."""
+    lines = [
+        '<routes>',
+        '    <vType id="car" vClass="passenger" length="4.5" maxSpeed="36.1" speedFactor="normc(1,0.1,0.8,1.2)"/>',
+        '    <vType id="truck" vClass="truck" length="12" maxSpeed="22.22" color="0.6,0.6,0.6"/>',
         '    <route id="r_main" edges="main_up accel main_down"/>',
         '    <route id="r_ramp" edges="ramp_in ramp_merge accel main_down"/>',
         '</routes>']
-    path = run_demo.OUT_DIR / "panel.rou.xml"
+    path = OUT_DIR / "panel.rou.xml"
     path.write_text("\n".join(lines) + "\n")
     return path
+
+
+def draw_speed_chart(canvas, history, now, seconds, grid_kmh):
+    """Line chart of (time, speed km/h) pairs over the last `seconds`."""
+    canvas.delete("all")
+    w, h = canvas.winfo_width(), canvas.winfo_height()
+    top = grid_kmh[-1] * 1.1
+    for kmh in grid_kmh:
+        y = h - kmh / top * h
+        canvas.create_line(0, y, w, y, fill="#e0e0e0")
+        canvas.create_text(4, y, text=f"{kmh}", anchor="sw", fill="gray")
+    points = []
+    for t, v in history:
+        points += [(t - now + seconds) / seconds * w, h - v / top * h]
+    if len(points) >= 4:
+        canvas.create_line(*points, fill="#1f77b4", width=2)
 
 
 class Panel:
@@ -47,7 +84,6 @@ class Panel:
         self.history = deque()        # (time, average speed km/h)
         self._build_ui()
 
-    # ------------------------------------------------------------------ UI
     def _section(self, title):
         frame = tk.LabelFrame(self.root, text=title, padx=10, pady=6)
         frame.pack(fill="x", padx=10, pady=5)
@@ -104,7 +140,6 @@ class Panel:
         self.pause_btn = tk.Button(self.root, text="Pause", command=self.toggle_pause)
         self.pause_btn.pack(fill="x", padx=10, pady=8)
 
-    # ------------------------------------------------------------- buttons
     def toggle_pause(self):
         self.running = not self.running
         self.pause_btn.config(text="Pause" if self.running else "Continue")
@@ -113,7 +148,7 @@ class Panel:
         self.lane_closed = not self.lane_closed
         if self.lane_closed:
             traci.lane.setDisallowed(CLOSED_LANE, ["passenger", "truck"])
-            # orange block on the closed lane so it is visible in the GUI
+            # orange block marking the closed lane in the GUI
             (x0, y0), _ = traci.lane.getShape(CLOSED_LANE)[:2]
             traci.polygon.add("roadworks", [(x0, y0 - 1.6), (x0 + 60, y0 - 1.6),
                                             (x0 + 60, y0 + 1.6), (x0, y0 + 1.6)],
@@ -124,7 +159,6 @@ class Panel:
             traci.polygon.remove("roadworks")
             self.lane_btn.config(text="Close left lane (roadworks)")
 
-    # ---------------------------------------------------------- simulation
     def tick(self):
         if self.running:
             try:
@@ -148,7 +182,7 @@ class Panel:
         else:
             new = "G"
         if new != self.signal:
-            traci.trafficlight.setRedYellowGreenState(run_demo.TLS_ID, new)
+            traci.trafficlight.setRedYellowGreenState(TLS_ID, new)
             self.signal = new
 
     def step(self):
@@ -167,7 +201,7 @@ class Panel:
         self.arrivals.append((now, traci.simulation.getArrivedNumber()))
         while self.arrivals and self.arrivals[0][0] < now - 60:
             self.arrivals.popleft()
-        if int(now / STEP) % 2 == 0:               # refresh the display every simulated second
+        if int(now / STEP) % 2 == 0:               # display refreshes every simulated second
             self.update_stats(now)
 
     def update_stats(self, now):
@@ -192,32 +226,18 @@ class Panel:
         draw_speed_chart(self.chart, self.history, now, CHART_SECONDS, (40, 80, 120))
 
 
-def draw_speed_chart(canvas, history, now, seconds, grid_kmh):
-    """Line chart of (time, speed km/h) pairs over the last `seconds`."""
-    canvas.delete("all")
-    w, h = canvas.winfo_width(), canvas.winfo_height()
-    top = grid_kmh[-1] * 1.1
-    for kmh in grid_kmh:
-        y = h - kmh / top * h
-        canvas.create_line(0, y, w, y, fill="#e0e0e0")
-        canvas.create_text(4, y, text=f"{kmh}", anchor="sw", fill="gray")
-    points = []
-    for t, v in history:
-        points += [(t - now + seconds) / seconds * w, h - v / top * h]
-    if len(points) >= 4:
-        canvas.create_line(*points, fill="#1f77b4", width=2)
-
-
 def main():
-    run_demo.OUT_DIR.mkdir(exist_ok=True)
-    run_demo.build_network()
+    OUT_DIR.mkdir(exist_ok=True)
+    build_network()
     routes = write_routes()
     traci.start([sumolib.checkBinary("sumo-gui"),
-                 "-c", str(run_demo.HERE / "geneva_merge.sumocfg"),
+                 "-c", str(HERE / "geneva_merge.sumocfg"),
                  "-r", str(routes), "--step-length", str(STEP),
                  "--start", "--quit-on-end", "--delay", "50"])
-    run_demo.focus_view()
-    traci.trafficlight.setRedYellowGreenState(run_demo.TLS_ID, "G")
+    # camera on the merge (node n1 at x=1500, y=0)
+    traci.gui.setOffset(traci.gui.DEFAULT_VIEW, 1550, -40)
+    traci.gui.setZoom(traci.gui.DEFAULT_VIEW, 400)
+    traci.trafficlight.setRedYellowGreenState(TLS_ID, "G")
 
     root = tk.Tk()
     root.title("Traffic control panel")
