@@ -11,74 +11,118 @@ and buttons. Every change shows on the road within seconds.
 
 Vehicles are coloured **by speed**: green is fast, red is slow or standing.
 
-## Installation
+## Installation and running
 
-You need **Python 3.9 or newer** and **SUMO 1.28**. The `pip` command below installs
-SUMO 1.28 inside a virtual environment on every system. If the SUMO window (`sumo-gui`)
-does not open, install SUMO 1.28 with the system installer for your operating system as
-well; older SUMO releases are at https://sumo.dlr.de/releases/.
+You need **Python 3.9 or newer** and **SUMO 1.28**. `pip install -r requirements.txt`
+installs SUMO 1.28 inside a virtual environment (`venv` folder) on every system.
+Installation is done once; the run steps are repeated every time you open a new terminal.
 
 ### Windows
 
-1. Install Python from https://www.python.org/downloads/ (tick *Add python.exe to PATH*).
-2. Open *Command Prompt* in the `geneva_demo` folder and run:
+**Install (once)**
+
+1. Install Python from https://www.python.org/downloads/ and tick
+   *Add python.exe to PATH* in the installer.
+2. Open *Command Prompt* (search for `cmd` in the Start menu).
+3. Go to the `geneva_demo` folder, create the virtual environment and install SUMO:
 
    ```bat
+   cd C:\path\to\geneva_demo
    py -m venv venv
    venv\Scripts\activate
    pip install -r requirements.txt
    ```
 
-3. Optional system installer: the Windows installer (`.msi`) from
-   https://sumo.dlr.de/docs/Downloads.php sets `SUMO_HOME` automatically.
+**Run**
+
+```bat
+cd C:\path\to\geneva_demo
+venv\Scripts\activate
+python control_panel.py
+```
+
+or `python phantom_jam.py` for the ring road.
+
+In *PowerShell*, activate with `venv\Scripts\Activate.ps1`. If PowerShell refuses to run
+the script, run `Set-ExecutionPolicy -Scope CurrentUser RemoteSigned` once, or use
+*Command Prompt*.
+
+If the SUMO window does not open, install SUMO 1.28 with the Windows installer
+`sumo-win64-1.28.0.msi` from https://sumo.dlr.de/releases/1.28.0/. It sets `SUMO_HOME`
+automatically; open a new *Command Prompt* afterwards.
 
 ### Linux (Ubuntu / Debian)
 
-1. Install the Python tools:
+**Install (once)**
+
+1. Install Python, the virtual-environment module and Tkinter for the control window:
 
    ```bash
+   sudo apt-get update
    sudo apt-get install python3 python3-venv python3-pip python3-tk
    ```
 
-2. In the `geneva_demo` folder:
+2. Go to the `geneva_demo` folder, create the virtual environment and install SUMO:
 
    ```bash
+   cd ~/path/to/geneva_demo
    python3 -m venv venv
    source venv/bin/activate
    pip install -r requirements.txt
    ```
 
-3. Optional system packages:
+**Run**
 
-   ```bash
-   sudo add-apt-repository ppa:sumo/stable
-   sudo apt-get update
-   sudo apt-get install sumo sumo-tools sumo-doc
-   export SUMO_HOME=/usr/share/sumo
-   ```
+```bash
+cd ~/path/to/geneva_demo
+source venv/bin/activate
+python control_panel.py
+```
+
+or `python phantom_jam.py` for the ring road.
+
+If the SUMO window does not open, install the libraries `sumo-gui` uses:
+
+```bash
+sudo apt-get install libgl1 libglu1-mesa libxcursor1 libxft2 libxinerama1
+```
 
 ### macOS
 
+**Install (once)**
+
 1. Install Python from https://www.python.org/downloads/. With Homebrew Python, also run
    `brew install python-tk` for the control window.
-2. In the `geneva_demo` folder:
+2. Open *Terminal*, go to the `geneva_demo` folder, create the virtual environment and
+   install SUMO:
 
    ```bash
+   cd ~/path/to/geneva_demo
    python3 -m venv venv
    source venv/bin/activate
    pip install -r requirements.txt
    ```
 
-3. If `sumo-gui` does not open, install SUMO with Homebrew:
+**Run**
 
-   ```bash
-   brew tap dlr-ts/sumo
-   brew install sumo
-   export SUMO_HOME="$(brew --prefix sumo)/share/sumo"
-   ```
+```bash
+cd ~/path/to/geneva_demo
+source venv/bin/activate
+python control_panel.py
+```
 
-   Add the `export` line to `~/.zshrc` to keep it. The macOS installer from
-   https://sumo.dlr.de/docs/Downloads.php is an alternative.
+or `python phantom_jam.py` for the ring road.
+
+If the SUMO window does not open, install SUMO 1.28 with the macOS installer from
+https://sumo.dlr.de/releases/1.28.0/ and set `SUMO_HOME` as the installer describes.
+
+### Check the installation
+
+With the virtual environment active, this shows `Version: 1.28.0`:
+
+```bash
+pip show eclipse-sumo
+```
 
 ## Motorway on-ramp: `control_panel.py`
 
