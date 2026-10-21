@@ -1,4 +1,3 @@
-eclipse-sumo
-traci
-sumolib
-matplotlib
+eclipse-sumo==1.28.0
+traci==1.28.0
+sumolib==1.28.0

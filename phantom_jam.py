@@ -120,7 +120,6 @@ class RingPanel:
         self.pause_btn = tk.Button(self.root, text="Pause", command=self.toggle_pause)
         self.pause_btn.pack(fill="x", padx=10, pady=8)
 
-    # ------------------------------------------------------------- buttons
     def restart(self):
         """Remove all cars and place the chosen number evenly around the ring."""
         for vid in traci.vehicle.getIDList():
@@ -152,7 +151,6 @@ class RingPanel:
         self.running = not self.running
         self.pause_btn.config(text="Pause" if self.running else "Continue")
 
-    # ---------------------------------------------------------- simulation
     def tick(self):
         if self.running:
             try:
@@ -166,7 +164,7 @@ class RingPanel:
         now = traci.simulation.getTime()
         if self.braking and now >= self.braking[1]:
             try:
-                traci.vehicle.setSpeed(self.braking[0], -1)   # drive normally again
+                traci.vehicle.setSpeed(self.braking[0], -1)   # SUMO controls the speed
             except traci.exceptions.TraCIException:
                 pass
             self.braking = None

@@ -1,24 +1,22 @@
-# SUMO demo: a Geneva-style motorway on-ramp
+# SUMO demo: motorway traffic to play with
 
-A 1.8 km, 3-lane motorway segment with one on-ramp and a 300 m acceleration lane,
-like the junctions on the Geneva motorway modelled in the *Digital Twin – Geneva Motorway*
-project (Kušić, Schumann, Ivanjko, 2023). Loop detectors play the role of the FEDRO
-traffic counters, and a traffic light on the ramp is used for ramp metering.
+Two interactive traffic simulations built with [SUMO](https://eclipse.dev/sumo/).
+Each opens the SUMO window with the moving cars and a control window with sliders
+and buttons. Every change shows on the road within seconds.
 
-```
- main_up (3 lanes, 1 km)           accel (4 lanes)    main_down (3 lanes, 0.5 km)
- ======================[up]========|=============|==[down]=====================>
-                                  /
-              ramp_in    [signal]/ ramp_merge
-             ------------- r1 --/
-```
+| Program | What it shows |
+|---|---|
+| `control_panel.py` | A motorway on-ramp, modelled on the Geneva motorway digital twin. You control the traffic, the speed limit, the ramp traffic light and roadworks. |
+| `phantom_jam.py` | Cars on a ring road. A traffic jam appears with no cause at all. |
+
+Vehicles are coloured **by speed**: green is fast, red is slow or standing.
 
 ## Installation
 
-You need **Python 3.9 or newer** and **SUMO**. The simplest way is to install SUMO
-with `pip` inside a virtual environment (same on all systems); if the graphical
-interface `sumo-gui` does not start, install SUMO with the system installer as well
-(see your operating system below).
+You need **Python 3.9 or newer** and **SUMO 1.28**. The `pip` command below installs
+SUMO 1.28 inside a virtual environment on every system. If the SUMO window (`sumo-gui`)
+does not open, install SUMO 1.28 with the system installer for your operating system as
+well; older SUMO releases are at https://sumo.dlr.de/releases/.
 
 ### Windows
 
@@ -31,15 +29,15 @@ interface `sumo-gui` does not start, install SUMO with the system installer as w
    pip install -r requirements.txt
    ```
 
-3. Optional – system installer: download the Windows installer (`.msi`) from
-   https://sumo.dlr.de/docs/Downloads.php. It sets `SUMO_HOME` automatically.
+3. Optional system installer: the Windows installer (`.msi`) from
+   https://sumo.dlr.de/docs/Downloads.php sets `SUMO_HOME` automatically.
 
 ### Linux (Ubuntu / Debian)
 
-1. Install Python tools:
+1. Install the Python tools:
 
    ```bash
-   sudo apt-get install python3 python3-venv python3-pip
+   sudo apt-get install python3 python3-venv python3-pip python3-tk
    ```
 
 2. In the `geneva_demo` folder:
@@ -50,7 +48,7 @@ interface `sumo-gui` does not start, install SUMO with the system installer as w
    pip install -r requirements.txt
    ```
 
-3. Optional – system packages:
+3. Optional system packages:
 
    ```bash
    sudo add-apt-repository ppa:sumo/stable
@@ -61,7 +59,8 @@ interface `sumo-gui` does not start, install SUMO with the system installer as w
 
 ### macOS
 
-1. Install Python from https://www.python.org/downloads/ or with Homebrew (`brew install python`).
+1. Install Python from https://www.python.org/downloads/. With Homebrew Python, also run
+   `brew install python-tk` for the control window.
 2. In the `geneva_demo` folder:
 
    ```bash
@@ -70,7 +69,7 @@ interface `sumo-gui` does not start, install SUMO with the system installer as w
    pip install -r requirements.txt
    ```
 
-3. If `sumo-gui` does not start, install SUMO with Homebrew:
+3. If `sumo-gui` does not open, install SUMO with Homebrew:
 
    ```bash
    brew tap dlr-ts/sumo
@@ -78,41 +77,27 @@ interface `sumo-gui` does not start, install SUMO with the system installer as w
    export SUMO_HOME="$(brew --prefix sumo)/share/sumo"
    ```
 
-   (Add the `export` line to `~/.zshrc` to keep it.) Alternatively use the macOS
-   installer from https://sumo.dlr.de/docs/Downloads.php.
+   Add the `export` line to `~/.zshrc` to keep it. The macOS installer from
+   https://sumo.dlr.de/docs/Downloads.php is an alternative.
 
-### Check the installation
-
-With the virtual environment activated:
-
-```bash
-python run_demo.py --scenario peak --nogui
-```
-
-It should print one line per simulated minute and end with the *Total Time Spent*.
-
-## Files
-
-| File | What it is |
-|---|---|
-| `net/*.nod.xml`, `*.edg.xml`, `*.con.xml` | The road described as nodes, edges and lane connections |
-| `net/geneva_merge.net.xml` | The SUMO network, built by `netconvert` (automatically) |
-| `detectors.add.xml` | Induction loops upstream and downstream of the merge |
-| `out/demand_*.rou.xml` | Traffic demand (cars + 10 % trucks), generated per scenario |
-| `geneva_merge.sumocfg` | The SUMO configuration that ties it all together |
-| `control_panel.py` | **Play mode:** sliders and buttons to change the traffic live |
-| `phantom_jam.py` | **Phantom jam:** cars on a ring road, a jam appears out of nowhere |
-| `run_demo.py` | Builds the network, writes demand, runs SUMO via **TraCI** |
-| `compare.py` | Plots the runs against each other |
-
-## Play mode: the control panel
+## Motorway on-ramp: `control_panel.py`
 
 ```bash
 python control_panel.py
 ```
 
-This opens `sumo-gui` and a control window next to it. Everything changes live while
-the cars are driving:
+A 1.8 km, 3-lane motorway with one on-ramp and a 300 m acceleration lane, like the
+junctions on the Geneva motorway in the *Digital Twin – Geneva Motorway* project
+(Kušić, Schumann, Ivanjko, 2023). A traffic light on the ramp controls how many cars
+enter the motorway.
+
+```
+ main_up (3 lanes, 1 km)           accel (4 lanes)    main_down (3 lanes, 0.5 km)
+ ==================================|=============|=============================>
+                                  /
+              ramp_in    [signal]/ ramp_merge
+             ------------- r1 --/
+```
 
 | Control | Try this |
 |---|---|
@@ -123,112 +108,53 @@ the cars are driving:
 | **Close left lane (roadworks)** | An orange block closes the left lane after the merge. |
 | **Pause** | Freeze the simulation to discuss what you see. |
 
-The **Live** box shows the average speed (red when below 40 km/h), how many vehicles are
-on the road, how many are waiting to enter, the queue on the ramp, the number of vehicles
-that got through in the last minute, and a chart of the average speed.
+The **Live** box shows the average speed (red below 40 km/h), the vehicles on the road,
+the vehicles waiting to enter, the queue on the ramp, the vehicles that got through in
+the last minute, and a chart of the average speed.
 
-Use the *Delay* field in the `sumo-gui` toolbar to make the simulation faster or slower.
+**Challenge: beat the jam.** Set motorway traffic to **5000 veh/h** and on-ramp traffic to
+**1000 veh/h**. Using only the *Traffic manager* controls, which group gets the most
+vehicles through per minute?
 
-> **Linux:** if you get `No module named tkinter`, run `sudo apt-get install python3-tk`.
-> **macOS with Homebrew Python:** run `brew install python-tk`.
-
-### Challenge: beat the jam
-
-Set motorway traffic to **5000 veh/h** and on-ramp traffic to **1000 veh/h**. Using only the
-*Traffic manager* controls (speed limit and ramp metering), which group can keep the most
-vehicles going through per minute?
-
-## Phantom traffic jam
+## Phantom traffic jam: `phantom_jam.py`
 
 ```bash
 python phantom_jam.py
 ```
 
-Cars drive around a 300 m circle at up to 50 km/h. There is no merge, no accident and
-no roadworks, yet after a while a **stop-and-go wave** appears and travels **backwards**
-around the ring while the cars drive forwards. This repeats the famous experiment by
-Sugiyama et al. (2008) with real drivers on a test track (search YouTube for
-*"shockwave traffic jam experiment"*).
+Cars drive around a 300 m ring at up to 50 km/h. There is no merge, no accident and no
+roadworks, yet a **stop-and-go wave** forms and travels **backwards** around the ring
+while the cars drive forwards. The program repeats the experiment by Sugiyama et al.
+(2008) with real drivers on a test track (YouTube: *"shockwave traffic jam experiment"*).
 
 | Control | Try this |
 |---|---|
-| **Number of cars** + **Restart** | With 10 cars nothing happens. With 25 a jam appears. Where is the tipping point? |
+| **Number of cars** + **Restart** | Find the number of cars at which the jam appears. |
 | **Driver imperfection** | At *perfect* (0) the jam dissolves. The more drivers hesitate, the faster jams form. |
-| **Brake!** | One random driver (pink circle) brakes hard for a moment. Watch the wave travel backwards. |
+| **Brake!** | One random driver (pink circle) brakes hard for 3 seconds. Watch the wave travel backwards. |
 | **Pause** | Freeze the ring to point at the wave. |
 
 Questions for the class: Who caused the jam? Why does the jam move backwards? How could
-automated (perfect) cars help?
+automated cars help?
 
-## Demo
+## Tips
 
-**Introduction — how SUMO works.** Open the three files in `net/` and `detectors.add.xml`.
-Network = nodes + edges + connections; demand = flows of vehicle types; TraCI = Python
-controlling the simulation step by step.
+* The *Delay* field in the `sumo-gui` toolbar sets the simulation speed: 0 is fastest.
+* If the SUMO window looks empty, click **Recenter View** (the house icon in the toolbar)
+  and zoom in with the mouse wheel.
+* Double-click a car, or right-click it and choose **Start Tracking**, to follow it.
+* The message "no projection defined" means the road has no GPS coordinates. It does not
+  affect the simulation.
 
-**Act 1: free flow.**
+## Files
 
-```bash
-python run_demo.py --scenario light
-```
-
-Vehicles are coloured **by speed** (red = slow, green = fast). If they are not, open
-*Edit → Edit Visualisation…* (the colour-wheel button in the toolbar), go to the
-*Vehicles* tab and choose **by speed** in the *Color* list. Vehicles from the ramp
-use the acceleration lane and merge without problems. The terminal prints the detector
-values for each simulated minute.
-
-**Act 2: peak hour, the merge breaks down.**
-
-```bash
-python run_demo.py --scenario peak
-```
-
-Demand rises to its peak. Ramp vehicles force their way in at the end of the acceleration
-lane, the mainline brakes, and a queue (red vehicles) grows **backwards** past the upstream
-detector. Talk about capacity drop and stop-and-go waves. Note the TTS printed at the end.
-
-**Act 3: ramp metering with ALINEA.**
-
-```bash
-python run_demo.py --scenario peak --control alinea
-```
-
-Every simulated minute the controller reads the downstream occupancy and updates the
-metering rate:
-
-  r(k) = r(k−1) + K_R · (o_target − o_down)
-
-The ramp signal lets one vehicle through per green. Vehicles now wait on the ramp instead of
-the mainline staying jammed. Show the `rate` column in the terminal changing.
-
-**Compare and discuss.**
-
-```bash
-python compare.py
-```
-
-Questions for the class: Did total time spent go down? Who pays the price (ramp drivers vs.
-motorway drivers)? What happens if the ramp queue spills back into the city?
-
-Use `--delay 0` to speed up the GUI or `--delay 100` to slow it down.
-If the GUI window looks empty, click **Recenter View** (the house icon in the toolbar),
-then zoom in on the merge with the mouse wheel.
-
-## Things to tune before class
-
-The numbers have not been calibrated. Run the three acts once with `--nogui` and check:
-
-* **Act 2 must jam.** If it does not, raise `"peak"` in `SCENARIOS` in `run_demo.py`
-  (e.g. `(5000, 1100)`). If it jams too hard, lower it.
-* **Act 3 should beat Act 2 on TTS.** If it does not, try another target occupancy,
-  e.g. `--target 12` or `--target 20` (critical occupancy depends on the vehicle model).
-
-## Exercises for students (after the demo)
-
-1. Change the length of the acceleration lane (`n2` in `geneva_merge.nod.xml`). What happens?
-2. Increase the truck share `TRUCK_SHARE`.
-3. Change the gain `K_R` or the target occupancy. Is the controller stable?
-4. Replace the car-following model with EIDM, used in the Geneva digital twin:
-   add `carFollowModel="EIDM"` to the `vType`s.
-5. Plot the fundamental diagram (flow vs. occupancy) from `out/loops.xml`.
+| File | What it is |
+|---|---|
+| `control_panel.py` | Motorway on-ramp with live controls |
+| `phantom_jam.py` | Ring road with live controls |
+| `net/geneva_merge.nod.xml` | Junctions (nodes) of the motorway, in metres |
+| `net/geneva_merge.edg.xml` | Road sections (edges): lanes and speed limits |
+| `net/geneva_merge.con.xml` | Which lane connects to which lane |
+| `geneva_merge.sumocfg` | SUMO configuration of the motorway |
+| `gui.view.xml` | SUMO window settings: colour by speed |
+| `out/` | Generated files: networks and routes, rebuilt on every start |

@@ -1,9 +1,8 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<!-- Routes (-r) are generated and passed by run_demo.py -->
+<!-- control_panel.py builds the network and passes the routes (-r) -->
 <configuration>
     <input>
         <net-file value="net/geneva_merge.net.xml"/>
-        <additional-files value="detectors.add.xml"/>
     </input>
 
     <report>
