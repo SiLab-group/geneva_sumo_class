@@ -14,7 +14,7 @@ Vehicles are coloured **by speed**: green is fast, red is slow or standing.
 ## Installation and running
 
 You need **Python 3.9 or newer** and **SUMO 1.28**. `pip install -r requirements.txt`
-installs SUMO 1.28 inside a virtual environment (`venv` folder) on every system.
+installs SUMO 1.28 inside a virtual environment (`.venv` folder) on every system.
 Installation is done once; the run steps are repeated every time you open a new terminal.
 
 ### Windows
@@ -28,8 +28,8 @@ Installation is done once; the run steps are repeated every time you open a new 
 
    ```bat
    cd C:\path\to\geneva_demo
-   py -m venv venv
-   venv\Scripts\activate
+   py -m venv .venv
+   .venv\Scripts\activate
    pip install -r requirements.txt
    ```
 
@@ -37,13 +37,13 @@ Installation is done once; the run steps are repeated every time you open a new 
 
 ```bat
 cd C:\path\to\geneva_demo
-venv\Scripts\activate
+.venv\Scripts\activate
 python control_panel.py
 ```
 
 or `python phantom_jam.py` for the ring road.
 
-In *PowerShell*, activate with `venv\Scripts\Activate.ps1`. If PowerShell refuses to run
+In *PowerShell*, activate with `.venv\Scripts\Activate.ps1`. If PowerShell refuses to run
 the script, run `Set-ExecutionPolicy -Scope CurrentUser RemoteSigned` once, or use
 *Command Prompt*.
 
@@ -66,8 +66,8 @@ automatically; open a new *Command Prompt* afterwards.
 
    ```bash
    cd ~/path/to/geneva_demo
-   python3 -m venv venv
-   source venv/bin/activate
+   python3 -m venv .venv
+   source .venv/bin/activate
    pip install -r requirements.txt
    ```
 
@@ -75,7 +75,7 @@ automatically; open a new *Command Prompt* afterwards.
 
 ```bash
 cd ~/path/to/geneva_demo
-source venv/bin/activate
+source .venv/bin/activate
 python control_panel.py
 ```
 
@@ -93,13 +93,15 @@ sudo apt-get install libgl1 libglu1-mesa libxcursor1 libxft2 libxinerama1
 
 1. Install Python from https://www.python.org/downloads/. With Homebrew Python, also run
    `brew install python-tk` for the control window.
-2. Open *Terminal*, go to the `geneva_demo` folder, create the virtual environment and
+2. Install **XQuartz** from https://www.xquartz.org (or `brew install --cask xquartz`).
+   The SUMO window (`sumo-gui`) runs on XQuartz. Log out and back in after installing it.
+3. Open *Terminal*, go to the `geneva_demo` folder, create the virtual environment and
    install SUMO:
 
    ```bash
    cd ~/path/to/geneva_demo
-   python3 -m venv venv
-   source venv/bin/activate
+   python3 -m venv .venv
+   source .venv/bin/activate
    pip install -r requirements.txt
    ```
 
@@ -107,7 +109,7 @@ sudo apt-get install libgl1 libglu1-mesa libxcursor1 libxft2 libxinerama1
 
 ```bash
 cd ~/path/to/geneva_demo
-source venv/bin/activate
+source .venv/bin/activate
 python control_panel.py
 ```
 
