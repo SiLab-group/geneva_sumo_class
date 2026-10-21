@@ -46,6 +46,9 @@ RATE_MIN, RATE_MAX = 300.0, 1800.0  # metering rate bounds [veh/h]
 GREEN_TIME = 2.0                    # green per cycle, about one vehicle [s]
 QUEUE_LIMIT = 50                    # ramp queue that forces the ramp open [veh]
 
+VTYPES = ['    <vType id="car" vClass="passenger" length="4.5" maxSpeed="36.1" speedFactor="normc(1,0.1,0.8,1.2)"/>',
+          '    <vType id="truck" vClass="truck" length="12" maxSpeed="22.22" color="0.6,0.6,0.6"/>']
+
 
 def build_network():
     """Convert the plain XML description (nodes, edges, connections) into a SUMO network."""
@@ -63,9 +66,7 @@ def build_network():
 def write_routes(scenario):
     """Write the traffic demand (flows of cars and trucks) for a scenario."""
     main, ramp = SCENARIOS[scenario]
-    lines = ['<routes>',
-             '    <vType id="car" vClass="passenger" length="4.5" maxSpeed="36.1" speedFactor="normc(1,0.1,0.8,1.2)"/>',
-             '    <vType id="truck" vClass="truck" length="12" maxSpeed="22.22" color="0.6,0.6,0.6"/>']
+    lines = ['<routes>'] + VTYPES
     for i, (begin, end, frac) in enumerate(PROFILE):
         for origin, peak in (("main_up", main), ("ramp_in", ramp)):
             for vtype, share in (("car", 1 - TRUCK_SHARE), ("truck", TRUCK_SHARE)):
@@ -76,6 +77,12 @@ def write_routes(scenario):
     path = OUT_DIR / f"demand_{scenario}.rou.xml"
     path.write_text("\n".join(lines) + "\n")
     return path
+
+
+def focus_view():
+    """Point the sumo-gui camera at the merge (node n1 at x=1500, y=0)."""
+    traci.gui.setOffset(traci.gui.DEFAULT_VIEW, 1550, -40)
+    traci.gui.setZoom(traci.gui.DEFAULT_VIEW, 400)
 
 
 def mean(values):
@@ -95,9 +102,7 @@ def run(scenario, control, gui, delay, target):
     traci.start(cmd)
 
     if gui:
-        # Point the camera at the merge (node n1 at x=1500, y=0)
-        traci.gui.setOffset(traci.gui.DEFAULT_VIEW, 1550, -40)
-        traci.gui.setZoom(traci.gui.DEFAULT_VIEW, 400)
+        focus_view()
 
     # Ramp signal: permanently green unless ALINEA controls it
     traci.trafficlight.setRedYellowGreenState(TLS_ID, "G")
