@@ -1,8 +1,8 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<!-- control_panel.py builds the network and passes the routes (-r) -->
+<!-- control_panel.py passes the routes (-r) -->
 <configuration>
     <input>
-        <net-file value="net/geneva_merge.net.xml"/>
+        <net-file value="net/geneva_cut.net.xml"/>
     </input>
 
     <report>

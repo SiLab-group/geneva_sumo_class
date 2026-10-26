@@ -1,0 +1,75 @@
+{
+  "credit": "\u00a9 swisstopo (SWISSIMAGE)",
+  "tiles": [
+    {
+      "file": "tile_0_0.jpg",
+      "centerX": 2885.1,
+      "centerY": 4433.98,
+      "width": 400.0,
+      "height": 400.0
+    },
+    {
+      "file": "tile_0_1.jpg",
+      "centerX": 3285.1,
+      "centerY": 4433.98,
+      "width": 400.0,
+      "height": 400.0
+    },
+    {
+      "file": "tile_1_0.jpg",
+      "centerX": 2885.1,
+      "centerY": 4833.98,
+      "width": 400.0,
+      "height": 400.0
+    },
+    {
+      "file": "tile_1_1.jpg",
+      "centerX": 3285.1,
+      "centerY": 4833.98,
+      "width": 400.0,
+      "height": 400.0
+    },
+    {
+      "file": "tile_2_0.jpg",
+      "centerX": 2885.1,
+      "centerY": 5233.98,
+      "width": 400.0,
+      "height": 400.0
+    },
+    {
+      "file": "tile_2_1.jpg",
+      "centerX": 3285.1,
+      "centerY": 5233.98,
+      "width": 400.0,
+      "height": 400.0
+    },
+    {
+      "file": "tile_3_0.jpg",
+      "centerX": 2885.1,
+      "centerY": 5633.98,
+      "width": 400.0,
+      "height": 400.0
+    },
+    {
+      "file": "tile_3_1.jpg",
+      "centerX": 3285.1,
+      "centerY": 5633.98,
+      "width": 400.0,
+      "height": 400.0
+    },
+    {
+      "file": "tile_4_0.jpg",
+      "centerX": 2885.1,
+      "centerY": 6033.98,
+      "width": 400.0,
+      "height": 400.0
+    },
+    {
+      "file": "tile_4_1.jpg",
+      "centerX": 3285.1,
+      "centerY": 6033.98,
+      "width": 400.0,
+      "height": 400.0
+    }
+  ]
+}

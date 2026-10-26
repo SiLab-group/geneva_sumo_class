@@ -1,15 +1,42 @@
-# SUMO demo: motorway traffic to play with
+# SUMO demo: the Geneva motorway to play with
 
-Two interactive traffic simulations built with [SUMO](https://eclipse.dev/sumo/).
-Each opens the SUMO window with the moving cars and a control window with sliders
-and buttons. Every change shows on the road within seconds.
+An interactive traffic simulation built with [SUMO](https://eclipse.dev/sumo/): an
+on-ramp of the Geneva motorway, cut from the Geneva digital twin. `control_panel.py`
+opens the SUMO window with the moving cars and a control window with sliders and
+buttons for the traffic, the speed limit, the ramp traffic light and roadworks. Every
+change shows on the road within seconds.
 
-| Program | What it shows |
+Vehicles are coloured **by speed** (SUMO's default scale):
+
+| Colour | Speed |
 |---|---|
-| `control_panel.py` | A motorway on-ramp, modelled on the Geneva motorway digital twin. You control the traffic, the speed limit, the ramp traffic light and roadworks. |
-| `phantom_jam.py` | Cars on a ring road. A traffic jam appears with no cause at all. |
+| red | standing or very slow |
+| yellow | about 20 km/h |
+| green | about 40 km/h |
+| cyan | about 80 km/h |
+| blue | about 120 km/h |
 
-Vehicles are coloured **by speed**: green is fast, red is slow or standing.
+The scale is listed in `sumo-gui` under *Edit → Edit Visualisation… → Vehicles*.
+
+## Background
+
+This is a simplified demo for students. The motorway on-ramp is a small piece cut out of
+the SUMO network of previous work: a digital twin of the Geneva motorway that feeds live
+data from the traffic counters of the Swiss Federal Roads Office (FEDRO / OFROU / ASTRA)
+into the simulation. The data is open and available on the Open Data Platform Mobility
+Switzerland: https://opentransportdata.swiss
+
+> K. Kušić, R. Schumann, E. Ivanjko, *A digital twin in transportation: Real-time synergy
+> of traffic data streams and simulation for virtualizing motorway dynamics*,
+> Advanced Engineering Informatics 55, 2023.
+> https://doi.org/10.1016/j.aei.2022.101858
+
+The cut keeps the real road shape, lengths and map position (A1, south-west Geneva,
+46.1874 N / 6.0812 E). Behind the road lies the swisstopo aerial photo of the same area
+(SWISSIMAGE, © swisstopo). The view is rotated so the motorway runs from left to right on
+screen. The demo uses its own traffic:
+the vehicles come from the sliders, not from traffic counter data. The DT-GM project is
+published under the GNU General Public License v3.
 
 ## Installation and running
 
@@ -40,8 +67,6 @@ cd C:\path\to\geneva_demo
 .venv\Scripts\activate
 python control_panel.py
 ```
-
-or `python phantom_jam.py` for the ring road.
 
 In *PowerShell*, activate with `.venv\Scripts\Activate.ps1`. If PowerShell refuses to run
 the script, run `Set-ExecutionPolicy -Scope CurrentUser RemoteSigned` once, or use
@@ -79,8 +104,6 @@ source .venv/bin/activate
 python control_panel.py
 ```
 
-or `python phantom_jam.py` for the ring road.
-
 If the SUMO window does not open, install the libraries `sumo-gui` uses:
 
 ```bash
@@ -91,8 +114,9 @@ sudo apt-get install libgl1 libglu1-mesa libxcursor1 libxft2 libxinerama1
 
 **Install (once)**
 
-1. Install Python from https://www.python.org/downloads/. With Homebrew Python, also run
-   `brew install python-tk` for the control window.
+1. Install Python **3.12 or newer** from https://www.python.org/downloads/. Older Python
+   versions on macOS come with a Tk version whose buttons do not always react to clicks.
+   With Homebrew Python, also run `brew install python-tk` for the control window.
 2. Install **XQuartz** from https://www.xquartz.org (or `brew install --cask xquartz`).
    The SUMO window (`sumo-gui`) runs on XQuartz. Log out and back in after installing it.
 3. Open *Terminal*, go to the `geneva_demo` folder, create the virtual environment and
@@ -113,8 +137,6 @@ source .venv/bin/activate
 python control_panel.py
 ```
 
-or `python phantom_jam.py` for the ring road.
-
 If the SUMO window does not open, install SUMO 1.28 with the macOS installer from
 https://sumo.dlr.de/releases/1.28.0/ and set `SUMO_HOME` as the installer describes.
 
@@ -132,18 +154,26 @@ pip show eclipse-sumo
 python control_panel.py
 ```
 
-A 1.8 km, 3-lane motorway with one on-ramp and a 300 m acceleration lane, like the
-junctions on the Geneva motorway in the *Digital Twin – Geneva Motorway* project
-(Kušić, Schumann, Ivanjko, 2023). A traffic light on the ramp controls how many cars
-enter the motorway.
+About 1 km of the Geneva motorway, northbound: 2 lanes at 120 km/h and one on-ramp
+(870 m with 2 lanes, then a 1-lane loop) that joins through a 310 m acceleration lane.
+A traffic light at the end of the loop,
+60 m before the merge, controls how many cars enter the motorway. On screen the cars
+drive from left to right and the ramp joins from below.
 
 ```
- main_up (3 lanes, 1 km)           accel (4 lanes)    main_down (3 lanes, 0.5 km)
- ==================================|=============|=============================>
-                                  /
-              ramp_in    [signal]/ ramp_merge
-             ------------- r1 --/
+ ES_N11 (2 lanes, 300 m)   ES_N12 (3 lanes, 310 m)   ES_N13 (2 lanes, 340 m)
+ ==========================|=======================|==========================>
+                          /
+                [J19] ---/  ES_N57_onramp1.140
+                  |
+          ( loop ramp ES_N57_onramp1, 1 lane, 60 km/h )
+                  |
+ ===== ES_N56_onramp1.90 (2 lanes, 870 m) =====
 ```
+
+The jam starts at the merge and grows backwards from about **3800 veh/h** on the motorway
+plus **1000 veh/h** on the ramp. When it reaches the start of the road, new cars show up
+as *Waiting to enter* in the panel.
 
 | Control | Try this |
 |---|---|
@@ -151,7 +181,7 @@ enter the motorway.
 | **Share of trucks** | Same traffic, more trucks: is it worse? |
 | **Speed limit** | During a jam, lower the limit to 80 km/h. Does traffic flow better? |
 | **Ramp metering** + **one car every … s** | Hold back the ramp cars with the traffic light. Who wins, who loses? |
-| **Close left lane (roadworks)** | An orange block closes the left lane after the merge. |
+| **Close left lane (roadworks)** | The left lane after the merge closes and turns orange. All cars squeeze into the right lane. |
 | **Pause** | Freeze the simulation to discuss what you see. |
 
 The **Live** box shows the average speed (red below 40 km/h), the vehicles on the road,
@@ -162,45 +192,22 @@ the last minute, and a chart of the average speed.
 **1000 veh/h**. Using only the *Traffic manager* controls, which group gets the most
 vehicles through per minute?
 
-## Phantom traffic jam: `phantom_jam.py`
-
-```bash
-python phantom_jam.py
-```
-
-Cars drive around a 300 m ring at up to 50 km/h. There is no merge, no accident and no
-roadworks, yet a **stop-and-go wave** forms and travels **backwards** around the ring
-while the cars drive forwards. The program repeats the experiment by Sugiyama et al.
-(2008) with real drivers on a test track (YouTube: *"shockwave traffic jam experiment"*).
-
-| Control | Try this |
-|---|---|
-| **Number of cars** + **Restart** | Find the number of cars at which the jam appears. |
-| **Driver imperfection** | At *perfect* (0) the jam dissolves. The more drivers hesitate, the faster jams form. |
-| **Brake!** | One random driver (pink circle) brakes hard for 3 seconds. Watch the wave travel backwards. |
-| **Pause** | Freeze the ring to point at the wave. |
-
-Questions for the class: Who caused the jam? Why does the jam move backwards? How could
-automated cars help?
-
 ## Tips
 
-* The *Delay* field in the `sumo-gui` toolbar sets the simulation speed: 0 is fastest.
+* The **Simulation speed** slider in the panel sets how fast the simulation runs.
 * If the SUMO window looks empty, click **Recenter View** (the house icon in the toolbar)
   and zoom in with the mouse wheel.
 * Double-click a car, or right-click it and choose **Start Tracking**, to follow it.
-* The message "no projection defined" means the road has no GPS coordinates. It does not
-  affect the simulation.
 
 ## Files
 
 | File | What it is |
 |---|---|
 | `control_panel.py` | Motorway on-ramp with live controls |
-| `phantom_jam.py` | Ring road with live controls |
-| `net/geneva_merge.nod.xml` | Junctions (nodes) of the motorway, in metres |
-| `net/geneva_merge.edg.xml` | Road sections (edges): lanes and speed limits |
-| `net/geneva_merge.con.xml` | Which lane connects to which lane |
+| `net/geneva_cut.net.xml` | The on-ramp cut from the Geneva motorway network |
+| `net/aerial/` | swisstopo aerial photo tiles behind the road (© swisstopo) |
 | `geneva_merge.sumocfg` | SUMO configuration of the motorway |
 | `gui.view.xml` | SUMO window settings: colour by speed |
-| `out/` | Generated files: networks and routes, rebuilt on every start |
+| `out/` | Generated files: routes and view settings, rebuilt on every start |
+| `../tools/cut_geneva.py` | Script that makes the cut from the DT-GM project |
+| `../tools/fetch_aerial.py` | Script that downloads the aerial photo tiles from swisstopo |

@@ -1,14 +1,16 @@
 #!/usr/bin/env python3
 """
-Interactive control panel for a Geneva-style motorway on-ramp.
+Interactive control panel for an on-ramp of the Geneva motorway.
 
     python control_panel.py
 
 Opens sumo-gui together with a window of sliders and buttons that change
-the traffic while the simulation runs.
+the traffic while the simulation runs. The road is net/geneva_cut.net.xml,
+cut from the DT-GM Geneva motorway network by tools/cut_geneva.py, on top of
+the swisstopo aerial photo in net/aerial/ (tools/fetch_aerial.py).
 """
+import json
 import random
-import subprocess
 import tkinter as tk
 from collections import deque
 from pathlib import Path
@@ -17,28 +19,21 @@ import sumolib
 import traci
 
 HERE = Path(__file__).resolve().parent
-NET_DIR = HERE / "net"
-NET_FILE = NET_DIR / "geneva_merge.net.xml"
 OUT_DIR = HERE / "out"
+AERIAL_DIR = HERE / "net" / "aerial"
+VIEW_ANGLE = -108.5                  # view rotation [deg]; the motorway heads 108.5 deg (north-northwest)
 
 STEP = 0.5                           # simulation step length [s]
-MOTORWAY = ["main_up", "accel", "main_down"]
-TLS_ID = "r1"                        # ramp signal (node r1)
-CLOSED_LANE = "main_down_2"          # left lane after the merge (roadworks)
+MAIN_ROUTE = ["ES_N11", "ES_N12", "ES_N13"]
+RAMP_ROUTE = ["ES_N56_onramp1.90", "ES_N57_onramp1", "ES_N57_onramp1.140", "ES_N12", "ES_N13"]
+RAMP_EDGES = RAMP_ROUTE[:3]
+MOTORWAY = MAIN_ROUTE
+MERGE_NODE = "59962795"              # junction where the ramp joins the motorway
+TLS_ID = "J19"                       # ramp signal, 60 m before the merge
+CLOSED_LANE = "ES_N13_1"             # left lane after the merge (roadworks)
+LANE_WIDTH = 3.2
 CHART_SECONDS = 600                  # speed history shown in the chart [s]
 GREEN_TIME = 2.0                     # ramp signal green per car [s]
-
-
-def build_network():
-    """Convert the plain XML description (nodes, edges, connections) into a SUMO network."""
-    subprocess.run([sumolib.checkBinary("netconvert"),
-                    "-n", str(NET_DIR / "geneva_merge.nod.xml"),
-                    "-e", str(NET_DIR / "geneva_merge.edg.xml"),
-                    "-x", str(NET_DIR / "geneva_merge.con.xml"),
-                    "-o", str(NET_FILE),
-                    "--no-turnarounds",
-                    "--offset.disable-normalization"],  # keeps the x/y of the .nod.xml file
-                   check=True)
 
 
 def write_routes():
@@ -47,11 +42,24 @@ def write_routes():
         '<routes>',
         '    <vType id="car" vClass="passenger" length="4.5" maxSpeed="36.1" speedFactor="normc(1,0.1,0.8,1.2)"/>',
         '    <vType id="truck" vClass="truck" length="12" maxSpeed="22.22" color="0.6,0.6,0.6"/>',
-        '    <route id="r_main" edges="main_up accel main_down"/>',
-        '    <route id="r_ramp" edges="ramp_in ramp_merge accel main_down"/>',
+        f'    <route id="r_main" edges="{" ".join(MAIN_ROUTE)}"/>',
+        f'    <route id="r_ramp" edges="{" ".join(RAMP_ROUTE)}"/>',
         '</routes>']
     path = OUT_DIR / "panel.rou.xml"
     path.write_text("\n".join(lines) + "\n")
+    return path
+
+
+def write_view_settings():
+    """gui.view.xml plus the aerial photo tiles as background images (decals)."""
+    view = (HERE / "gui.view.xml").read_text()
+    info = json.loads((AERIAL_DIR / "aerial.json").read_text())
+    decals = "".join(
+        f'    <decal file="{AERIAL_DIR / t["file"]}" centerX="{t["centerX"]:.2f}" centerY="{t["centerY"]:.2f}" '
+        f'width="{t["width"]:.2f}" height="{t["height"]:.2f}" rotation="0"/>\n'
+        for t in info["tiles"])
+    path = OUT_DIR / "geneva.view.xml"
+    path.write_text(view.replace("</viewsettings>", decals + "</viewsettings>"))
     return path
 
 
@@ -122,6 +130,8 @@ class Panel:
         self.lane_btn = tk.Button(roadworks, text="Close left lane (roadworks)",
                                   command=self.toggle_lane)
         self.lane_btn.pack(fill="x", pady=2)
+        self.status = tk.Label(roadworks, text="", fg="gray", anchor="w", justify="left", wraplength=380)
+        self.status.pack(fill="x")
 
         live = self._section("Live")
         self.stats = {}
@@ -137,36 +147,46 @@ class Panel:
         self.chart = tk.Canvas(live, width=380, height=120, bg="white", highlightthickness=1)
         self.chart.pack(fill="x")
 
-        self.pause_btn = tk.Button(self.root, text="Pause", command=self.toggle_pause)
-        self.pause_btn.pack(fill="x", padx=10, pady=8)
+        simulation = self._section("Simulation")
+        self.sim_speed = self._slider(simulation, "Simulation speed", 1, 20, 10, 1, "x real time")
+        self.pause_btn = tk.Button(simulation, text="Pause", command=self.toggle_pause)
+        self.pause_btn.pack(fill="x", pady=4)
 
     def toggle_pause(self):
         self.running = not self.running
         self.pause_btn.config(text="Pause" if self.running else "Continue")
 
     def toggle_lane(self):
-        self.lane_closed = not self.lane_closed
-        if self.lane_closed:
-            traci.lane.setDisallowed(CLOSED_LANE, ["passenger", "truck"])
-            # orange block marking the closed lane in the GUI
-            (x0, y0), _ = traci.lane.getShape(CLOSED_LANE)[:2]
-            traci.polygon.add("roadworks", [(x0, y0 - 1.6), (x0 + 60, y0 - 1.6),
-                                            (x0 + 60, y0 + 1.6), (x0, y0 + 1.6)],
-                              (255, 140, 0, 255), fill=True, layer=5)
-            self.lane_btn.config(text="Open left lane again")
-        else:
-            traci.lane.setDisallowed(CLOSED_LANE, [])
-            traci.polygon.remove("roadworks")
-            self.lane_btn.config(text="Close left lane (roadworks)")
+        try:
+            if not self.lane_closed:
+                traci.lane.setDisallowed(CLOSED_LANE, ["passenger", "truck"])
+                self.lane_closed = True
+                self.lane_btn.config(text="Open left lane again")
+                self.status.config(text="Left lane after the merge is closed.", fg="gray")
+                # orange stripe along the whole closed lane
+                traci.polygon.add("roadworks", traci.lane.getShape(CLOSED_LANE),
+                                  (255, 140, 0, 255), fill=False, layer=5, lineWidth=LANE_WIDTH)
+            else:
+                traci.lane.setDisallowed(CLOSED_LANE, [])
+                self.lane_closed = False
+                self.lane_btn.config(text="Close left lane (roadworks)")
+                self.status.config(text="Left lane is open.", fg="gray")
+                if "roadworks" in traci.polygon.getIDList():
+                    traci.polygon.remove("roadworks")
+        except traci.exceptions.TraCIException as error:
+            self.status.config(text=f"SUMO error: {error}", fg="red")
+            print(f"SUMO error while switching the lane: {error}")
 
     def tick(self):
+        """One simulation step, then idle until the next one so clicks get handled."""
         if self.running:
             try:
                 self.step()
             except traci.exceptions.FatalTraCIError:   # sumo-gui was closed
                 self.root.destroy()
                 return
-        self.root.after(1 if self.running else 100, self.tick)
+        wait_ms = round(STEP * 1000 / self.sim_speed.get()) if self.running else 100
+        self.root.after(wait_ms, self.tick)
 
     def insert(self, route, veh_per_hour):
         if random.random() < veh_per_hour * STEP / 3600:
@@ -211,8 +231,7 @@ class Panel:
             avg = sum(c * s for c, s in zip(counts, speeds)) / sum(counts) * 3.6
         else:
             avg = self.speed.get()
-        queue = (traci.edge.getLastStepHaltingNumber("ramp_in")
-                 + traci.edge.getLastStepHaltingNumber("ramp_merge"))
+        queue = sum(traci.edge.getLastStepHaltingNumber(e) for e in RAMP_EDGES)
 
         self.stats["speed"].config(text=f"{avg:.0f} km/h", fg="red" if avg < 40 else "green")
         self.stats["cars"].config(text=f"{traci.vehicle.getIDCount()}")
@@ -228,15 +247,15 @@ class Panel:
 
 def main():
     OUT_DIR.mkdir(exist_ok=True)
-    build_network()
     routes = write_routes()
     traci.start([sumolib.checkBinary("sumo-gui"),
                  "-c", str(HERE / "geneva_merge.sumocfg"),
                  "-r", str(routes), "--step-length", str(STEP),
-                 "--start", "--quit-on-end", "--delay", "50"])
-    # camera on the merge (node n1 at x=1500, y=0)
-    traci.gui.setOffset(traci.gui.DEFAULT_VIEW, 1550, -40)
-    traci.gui.setZoom(traci.gui.DEFAULT_VIEW, 400)
+                 "--gui-settings-file", str(write_view_settings()),
+                 "--start", "--quit-on-end", "--delay", "0"])
+    traci.gui.setAngle(traci.gui.DEFAULT_VIEW, VIEW_ANGLE)
+    traci.gui.setOffset(traci.gui.DEFAULT_VIEW, *traci.junction.getPosition(MERGE_NODE))
+    traci.gui.setZoom(traci.gui.DEFAULT_VIEW, 300)
     traci.trafficlight.setRedYellowGreenState(TLS_ID, "G")
 
     root = tk.Tk()
