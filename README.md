@@ -34,9 +34,9 @@ Switzerland: https://opentransportdata.swiss
 The cut keeps the real road shape, lengths and map position (A1, south-west Geneva,
 46.1874 N / 6.0812 E). Behind the road lies the swisstopo aerial photo of the same area
 (SWISSIMAGE, © swisstopo). The view is rotated so the motorway runs from left to right on
-screen. The demo uses its own traffic:
-the vehicles come from the sliders, not from traffic counter data. The DT-GM project is
-published under the GNU General Public License v3.
+screen. The demo uses its own traffic: the vehicles come from the sliders, not from
+traffic counter data. The DT-GM project is published under the GNU General Public
+License v3.
 
 ## Installation and running
 
@@ -114,9 +114,8 @@ sudo apt-get install libgl1 libglu1-mesa libxcursor1 libxft2 libxinerama1
 
 **Install (once)**
 
-1. Install Python **3.12 or newer** from https://www.python.org/downloads/. Older Python
-   versions on macOS come with a Tk version whose buttons do not always react to clicks.
-   With Homebrew Python, also run `brew install python-tk` for the control window.
+1. Install Python from https://www.python.org/downloads/. With Homebrew Python, also run
+   `brew install python-tk` for the control window.
 2. Install **XQuartz** from https://www.xquartz.org (or `brew install --cask xquartz`).
    The SUMO window (`sumo-gui`) runs on XQuartz. Log out and back in after installing it.
 3. Open *Terminal*, go to the `geneva_demo` folder, create the virtual environment and
@@ -137,6 +136,19 @@ source .venv/bin/activate
 python control_panel.py
 ```
 
+If the terminal keeps printing `Could not connect to TraCI server … Retrying`, the SUMO
+window has not started yet. On the first start XQuartz takes a while:
+
+1. Stop the program with **Ctrl+C**.
+2. With the virtual environment active, start the SUMO window on its own and wait until
+   it appears (up to 30 seconds; it can open behind other windows):
+
+   ```bash
+   sumo-gui
+   ```
+
+3. Close the SUMO window and run `python control_panel.py` again.
+
 If the SUMO window does not open, install SUMO 1.28 with the macOS installer from
 https://sumo.dlr.de/releases/1.28.0/ and set `SUMO_HOME` as the installer describes.
 
@@ -156,9 +168,9 @@ python control_panel.py
 
 About 1 km of the Geneva motorway, northbound: 2 lanes at 120 km/h and one on-ramp
 (870 m with 2 lanes, then a 1-lane loop) that joins through a 310 m acceleration lane.
-A traffic light at the end of the loop,
-60 m before the merge, controls how many cars enter the motorway. On screen the cars
-drive from left to right and the ramp joins from below.
+A traffic light at the end of the loop, 60 m before the merge, controls how many cars
+enter the motorway. On screen the cars drive from left to right and the ramp joins from
+below.
 
 ```
  ES_N11 (2 lanes, 300 m)   ES_N12 (3 lanes, 310 m)   ES_N13 (2 lanes, 340 m)
@@ -197,7 +209,7 @@ vehicles through per minute?
 * The **Simulation speed** slider in the panel sets how fast the simulation runs.
 * If the SUMO window looks empty, click **Recenter View** (the house icon in the toolbar)
   and zoom in with the mouse wheel.
-* Double-click a car, or right-click it and choose **Start Tracking**, to follow it.
+* Right-click a car and choose **Start Tracking** to follow it.
 
 ## Files
 
