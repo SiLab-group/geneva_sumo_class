@@ -50,11 +50,19 @@ Installation is done once; the run steps are repeated every time you open a new 
 
 1. Install Python from https://www.python.org/downloads/ and tick
    *Add python.exe to PATH* in the installer.
-2. Open *Command Prompt* (search for `cmd` in the Start menu).
-3. Go to the `geneva_demo` folder, create the virtual environment and install SUMO:
+2. Install Git from https://git-scm.com/downloads/win.
+3. Open *Command Prompt* (search for `cmd` in the Start menu).
+4. Clone the repository into the folder of your choice:
 
    ```bat
-   cd C:\path\to\geneva_demo
+   cd C:\path\to\your\folder
+   git clone https://github.com/SiLab-group/geneva_sumo_class.git
+   ```
+
+5. Go to the `geneva_sumo_class` folder, create the virtual environment and install SUMO:
+
+   ```bat
+   cd geneva_sumo_class
    py -m venv .venv
    .venv\Scripts\activate
    pip install -r requirements.txt
@@ -63,7 +71,7 @@ Installation is done once; the run steps are repeated every time you open a new 
 **Run**
 
 ```bat
-cd C:\path\to\geneva_demo
+cd C:\path\to\your\folder\geneva_sumo_class
 .venv\Scripts\activate
 python control_panel.py
 ```
@@ -80,17 +88,24 @@ automatically; open a new *Command Prompt* afterwards.
 
 **Install (once)**
 
-1. Install Python, the virtual-environment module and Tkinter for the control window:
+1. Install Git, Python, the virtual-environment module and Tkinter for the control window:
 
    ```bash
    sudo apt-get update
-   sudo apt-get install python3 python3-venv python3-pip python3-tk
+   sudo apt-get install git python3 python3-venv python3-pip python3-tk
    ```
 
-2. Go to the `geneva_demo` folder, create the virtual environment and install SUMO:
+2. Clone the repository into the folder of your choice:
 
    ```bash
-   cd ~/path/to/geneva_demo
+   cd ~/path/to/your/folder
+   git clone https://github.com/SiLab-group/geneva_sumo_class.git
+   ```
+
+3. Go to the `geneva_sumo_class` folder, create the virtual environment and install SUMO:
+
+   ```bash
+   cd geneva_sumo_class
    python3 -m venv .venv
    source .venv/bin/activate
    pip install -r requirements.txt
@@ -99,7 +114,7 @@ automatically; open a new *Command Prompt* afterwards.
 **Run**
 
 ```bash
-cd ~/path/to/geneva_demo
+cd ~/path/to/your/folder/geneva_sumo_class
 source .venv/bin/activate
 python control_panel.py
 ```
@@ -118,11 +133,19 @@ sudo apt-get install libgl1 libglu1-mesa libxcursor1 libxft2 libxinerama1
    `brew install python-tk` for the control window.
 2. Install **XQuartz** from https://www.xquartz.org (or `brew install --cask xquartz`).
    The SUMO window (`sumo-gui`) runs on XQuartz. Log out and back in after installing it.
-3. Open *Terminal*, go to the `geneva_demo` folder, create the virtual environment and
-   install SUMO:
+3. Open *Terminal* and clone the repository into the folder of your choice. If macOS
+   asks to install the command line developer tools for `git`, click *Install* and run
+   the command again:
 
    ```bash
-   cd ~/path/to/geneva_demo
+   cd ~/path/to/your/folder
+   git clone https://github.com/SiLab-group/geneva_sumo_class.git
+   ```
+
+4. Go to the `geneva_sumo_class` folder, create the virtual environment and install SUMO:
+
+   ```bash
+   cd geneva_sumo_class
    python3 -m venv .venv
    source .venv/bin/activate
    pip install -r requirements.txt
@@ -131,7 +154,7 @@ sudo apt-get install libgl1 libglu1-mesa libxcursor1 libxft2 libxinerama1
 **Run**
 
 ```bash
-cd ~/path/to/geneva_demo
+cd ~/path/to/your/folder/geneva_sumo_class
 source .venv/bin/activate
 python control_panel.py
 ```
